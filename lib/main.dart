@@ -17,21 +17,6 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // TRY THIS: Try running your application with "flutter run". You'll see
-          // the application has a purple toolbar. Then, without quitting the app,
-          // try changing the seedColor in the colorScheme below to Colors.green
-          // and then invoke "hot reload" (save your changes or press the "hot
-          // reload" button in a Flutter-supported IDE, or press "r" if you used
-          // the command line to start the app).
-          //
-          // Notice that the counter didn't reset back to zero; the application
-          // state is not lost during the reload. To reset the state, use hot
-          // restart instead.
-          //
-          // This works for code too, not just values: Most code changes can be
-          // tested with just a hot reload.
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         ),
         home: const MyHomePage(title: 'The Rummikub Timer'),
@@ -42,12 +27,11 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = 1;
-  int secondsElapsed = 0;
+  int secondsRemaining = 120;
   Timer? _timer;
   var turnTime = 120;
-  var numPlayers = 4;
-  var playersName = <String>['Player 1', 'Player 2', 'Player 3', 'Player 4'];
-
+  var numPlayers = 2;
+  var playersName = <String>['Player 1', 'Player 2'];
   void nextPlayer() {
     current = (current % numPlayers) + 1;
     startTimer();
@@ -57,11 +41,12 @@ class MyAppState extends ChangeNotifier {
   void startTimer() {
     resetTimer();
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (secondsElapsed < turnTime) {
-        secondsElapsed++;
+      if (secondsRemaining > 0) {
+        secondsRemaining--;
         notifyListeners();
       } else {
         _timer?.cancel();
+        nextPlayer();
       }
     });
     notifyListeners();
@@ -69,22 +54,18 @@ class MyAppState extends ChangeNotifier {
 
   void resetTimer() {
     _timer?.cancel();
-    secondsElapsed = 0;
+    secondsRemaining = turnTime;
     notifyListeners();
+  }
+
+  void startGameTimer() {
+    current = 1;
+    startTimer();
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -93,6 +74,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  int selectedView = 0; // 0: NewGamePage, 1: TimerPage
+  void switchToTimerPage() {
+    setState(() {
+      selectedView = 1;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,8 +92,22 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+        actions: [
+          TextButton.icon(
+            icon: Icon(Icons.refresh, color: Colors.white),
+            label: Text('New Game', style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              setState(() {
+                selectedView = 0; // Switch to NewGamePage
+              });
+              context.read<MyAppState>().resetTimer();
+            },
+          ),
+        ],
       ),
-      body: Center(child: TimerPage()),
+      body: selectedView == 0
+          ? NewGamePage(onStartGame: switchToTimerPage)
+          : TimerPage(),
     );
   }
 }
@@ -114,8 +116,7 @@ class TimerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<MyAppState>();
-    final minutes = (appState.secondsElapsed ~/ 60).toString().padLeft(2, '0');
-    final seconds = (appState.secondsElapsed % 60).toString().padLeft(2, '0');
+    final tseconds = appState.secondsRemaining.toString().padLeft(2, '0');
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -130,7 +131,7 @@ class TimerPage extends StatelessWidget {
               backgroundColor: Theme.of(context).colorScheme.secondary,
               foregroundColor: Colors.white,
               textStyle: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(fontSize: 48)
+                  ?.copyWith(fontSize: 58)
                   .copyWith(fontWeight: FontWeight.bold),
               minimumSize: Size(250, 400), // Makes the button big and square
               shape: RoundedRectangleBorder(
@@ -140,9 +141,136 @@ class TimerPage extends StatelessWidget {
             onPressed: () {
               context.read<MyAppState>().nextPlayer();
             },
-            child: Text('$minutes:$seconds'),
+            child: Text(tseconds),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class NewGamePage extends StatefulWidget {
+  final VoidCallback onStartGame;
+  const NewGamePage({super.key, required this.onStartGame});
+
+  @override
+  State<NewGamePage> createState() => _NewGamePageState();
+}
+
+class _NewGamePageState extends State<NewGamePage> {
+  int selectedPlayers = 2; // Default value
+  int selectedTurnTime = 120;
+  late List<TextEditingController> nameControllers;
+
+  @override
+  void initState() {
+    super.initState();
+    nameControllers = List.generate(
+      selectedPlayers,
+      (index) => TextEditingController(),
+    );
+  }
+
+  @override
+  void dispose() {
+    for (var controller in nameControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void updateControllers(int count) {
+    if (count > nameControllers.length) {
+      nameControllers.addAll(
+        List.generate(
+          count - nameControllers.length,
+          (index) => TextEditingController(),
+        ),
+      );
+    } else if (count < nameControllers.length) {
+      nameControllers = nameControllers.sublist(0, count);
+    }
+  }
+
+  Widget build(BuildContext context) {
+    updateControllers(selectedPlayers);
+
+    return Scaffold(
+      appBar: AppBar(title: Text('New Game')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Select number of players:',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            SizedBox(height: 10),
+            DropdownButton<int>(
+              value: selectedPlayers,
+              items: [2, 3, 4].map((num) {
+                return DropdownMenuItem<int>(value: num, child: Text('$num'));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedPlayers = value!;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Enter player names:',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            ...List.generate(selectedPlayers, (index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4.0,
+                  horizontal: 40.0,
+                ),
+                child: TextField(
+                  controller: nameControllers[index],
+                  decoration: InputDecoration(
+                    labelText: 'Player ${index + 1} Name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              );
+            }),
+            SizedBox(height: 20),
+            Text(
+              'Select turn time (seconds):',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            DropdownButton<int>(
+              value: selectedTurnTime,
+              items: [30, 60, 90, 120].map((num) {
+                return DropdownMenuItem<int>(value: num, child: Text('$num'));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedTurnTime = value!;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                context.read<MyAppState>().numPlayers = selectedPlayers;
+                context.read<MyAppState>().turnTime = selectedTurnTime;
+                context.read<MyAppState>().playersName = List.generate(
+                  selectedPlayers,
+                  (index) => nameControllers[index].text.isNotEmpty
+                      ? nameControllers[index].text
+                      : 'Player ${index + 1}', // <-- Use entered name or default
+                );
+                context.read<MyAppState>().startGameTimer();
+                widget.onStartGame();
+              },
+              child: Text('Start Game'),
+            ),
+          ],
+        ),
       ),
     );
   }
