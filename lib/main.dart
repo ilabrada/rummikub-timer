@@ -247,7 +247,7 @@ class _NewGamePageState extends State<NewGamePage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text(
-              'Players and Time:',
+              'Game Setup:',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -255,88 +255,10 @@ class _NewGamePageState extends State<NewGamePage> {
             ),
             SizedBox(height: 15),
             Text(
-              'Number of players:',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: selectedPlayers > 2
-                        ? () {
-                            setState(() {
-                              selectedPlayers--;
-                            });
-                          }
-                        : null, // Disable if at minimum
-                  ),
-                ),
-                SizedBox(width: 50),
-                Text(
-                  '$selectedPlayers',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                SizedBox(width: 50),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: selectedPlayers < 4
-                        ? () {
-                            setState(() {
-                              selectedPlayers++;
-                            });
-                          }
-                        : null, // Disable if at maximum
-                  ),
-                ),
-              ],
-            ),
-            // DropdownButton<int>(
-            //   value: selectedPlayers,
-            //   items: [2, 3, 4].map((num) {
-            //     return DropdownMenuItem<int>(value: num, child: Text('$num'));
-            //   }).toList(),
-            //   onChanged: (value) {
-            //     setState(() {
-            //       selectedPlayers = value!;
-            //     });
-            //   },
-            // ),
-            SizedBox(height: 10),
-            ...List.generate(selectedPlayers, (index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 4.0,
-                  horizontal: 40.0,
-                ),
-                child: TextField(
-                  controller: nameControllers[index],
-
-                  decoration: InputDecoration(
-                    labelText: 'Player ${index + 1}',
-                    border: OutlineInputBorder(borderSide: BorderSide.none),
-                    filled: true,
-                    fillColor: Color(0xFFFFFFFF),
-                  ),
-                  style: TextStyle(color: Color(0xFF555555)),
-                ),
-              );
-            }),
-            SizedBox(height: 10),
-            Text(
               'Time per turn (seconds):',
               style: Theme.of(context).textTheme.titleMedium,
             ),
+            SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -380,6 +302,75 @@ class _NewGamePageState extends State<NewGamePage> {
                 ),
               ],
             ),
+            SizedBox(height: 30),
+            Text(
+              'Number of players:',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.remove),
+                    onPressed: selectedPlayers > 2
+                        ? () {
+                            setState(() {
+                              selectedPlayers--;
+                            });
+                          }
+                        : null, // Disable if at minimum
+                  ),
+                ),
+                SizedBox(width: 50),
+                Text(
+                  '$selectedPlayers',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                SizedBox(width: 50),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: selectedPlayers < 4
+                        ? () {
+                            setState(() {
+                              selectedPlayers++;
+                            });
+                          }
+                        : null, // Disable if at maximum
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            ...List.generate(selectedPlayers, (index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4.0,
+                  horizontal: 40.0,
+                ),
+                child: TextField(
+                  controller: nameControllers[index],
+
+                  decoration: InputDecoration(
+                    labelText: 'Player ${index + 1}',
+                    border: OutlineInputBorder(borderSide: BorderSide.none),
+                    filled: true,
+                    fillColor: Color(0xFFFFFFFF),
+                  ),
+                  style: TextStyle(color: Color(0xFF555555)),
+                ),
+              );
+            }),
             SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
