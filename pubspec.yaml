@@ -47,7 +47,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.4
-  flutter_native_splash: ^2.3.10
+  flutter_native_splash: ^2.4.0
 
 flutter_icons:
   android: true
@@ -55,8 +55,17 @@ flutter_icons:
   image_path: "assets/ic_launcher_play_store.png"
 
 flutter_native_splash:
-  color: "#cec6b3"
-  image: assets/ic_launcher_play_store.png
+  #background_image: assets/ic_launcher_background.png
+  color: "#FFFFFF" # light beige background
+  image: assets/ic_launcher_foreground_white.png
+  android_12:
+    color: "#FFFFFF"
+    image: assets/ic_launcher_foreground_white.png
+  android: true
+  ios: true
+  web: false
+  fullscreen: true
+  color_dark: "#FFFFFF" # Darker blue for dark mode
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -69,6 +78,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/rummikb-tiles.png
+    - assets/ic_launcher_background.png
+    - assets/ic_launcher_foreground_white.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
