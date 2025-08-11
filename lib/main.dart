@@ -372,31 +372,34 @@ class _NewGamePageState extends State<NewGamePage> {
               );
             }),
             SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF1976D2),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                minimumSize: Size(280, 48),
-                textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                context.read<MyAppState>().numPlayers = selectedPlayers;
-                context.read<MyAppState>().turnTime = selectedTurnTime;
-                context.read<MyAppState>().playersName = List.generate(
-                  selectedPlayers,
-                  (index) => nameControllers[index].text.isNotEmpty
-                      ? nameControllers[index].text
-                      : 'Player ${index + 1}',
-                );
-                context.read<MyAppState>().startGameTimer();
-                widget.onStartGame();
-              },
-              child: Text('Start'),
-            ),
           ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 52.0, left: 24.0, right: 24.0),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF1976D2),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+            minimumSize: Size(280, 48),
+            textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          onPressed: () {
+            context.read<MyAppState>().numPlayers = selectedPlayers;
+            context.read<MyAppState>().turnTime = selectedTurnTime;
+            context.read<MyAppState>().playersName = List.generate(
+              selectedPlayers,
+              (index) => nameControllers[index].text.isNotEmpty
+                  ? nameControllers[index].text
+                  : 'Player ${index + 1}',
+            );
+            context.read<MyAppState>().startGameTimer();
+            widget.onStartGame();
+          },
+          child: Text('Start'),
         ),
       ),
     );
