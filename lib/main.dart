@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = 1;
-  int secondsRemaining = 120;
+  int secondsRemaining = 30;
   Timer? _timer;
   var turnTime = 120;
   var numPlayers = 2;
@@ -154,20 +154,38 @@ class TimerPage extends StatelessWidget {
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFFE53935),
-              foregroundColor: Colors.white,
-              shape: CircleBorder(),
-              minimumSize: Size(230, 230), // Makes the button big and square
-              textStyle: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(fontSize: 58)
-                  .copyWith(fontWeight: FontWeight.bold),
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: int.parse(tseconds) <= 5
+                  ? [
+                      BoxShadow(
+                        color: Colors.red.withAlpha(
+                          (0.6 * 255).toInt(),
+                        ), // Glow color
+                        blurRadius: 30, // Spread of the glow
+                        spreadRadius: 8,
+                      ),
+                    ]
+                  : [], // No glow if tseconds > 5
             ),
-            onPressed: () {
-              context.read<MyAppState>().nextPlayer();
-            },
-            child: Text(tseconds),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: int.parse(tseconds) > 10
+                    ? Color(0xFFF57C00)
+                    : Color(0xFFE53935),
+                foregroundColor: Colors.white,
+                shape: CircleBorder(),
+                minimumSize: Size(230, 230), // Makes the button big and square
+                textStyle: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontSize: 58)
+                    .copyWith(fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                context.read<MyAppState>().nextPlayer();
+              },
+              child: Text(tseconds),
+            ),
           ),
         ],
       ),
@@ -185,7 +203,7 @@ class NewGamePage extends StatefulWidget {
 
 class _NewGamePageState extends State<NewGamePage> {
   int selectedPlayers = 2; // Default value
-  int selectedTurnTime = 120;
+  int selectedTurnTime = 30; //Default value
   late List<TextEditingController> nameControllers;
 
   @override
@@ -240,46 +258,60 @@ class _NewGamePageState extends State<NewGamePage> {
               'Number of players:',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.center,
-            //   children: [
-            //     IconButton(
-            //       icon: Icon(Icons.remove),
-            //       onPressed: selectedPlayers > 2
-            //           ? () {
-            //               setState(() {
-            //                 selectedPlayers--;
-            //               });
-            //             }
-            //           : null, // Disable if at minimum
-            //     ),
-            //     Text(
-            //       '$selectedPlayers',
-            //       style: Theme.of(context).textTheme.titleLarge,
-            //     ),
-            //     IconButton(
-            //       icon: Icon(Icons.add),
-            //       onPressed: selectedPlayers < 4
-            //           ? () {
-            //               setState(() {
-            //                 selectedPlayers++;
-            //               });
-            //             }
-            //           : null, // Disable if at maximum
-            //     ),
-            //   ],
-            // ),
-            DropdownButton<int>(
-              value: selectedPlayers,
-              items: [2, 3, 4].map((num) {
-                return DropdownMenuItem<int>(value: num, child: Text('$num'));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedPlayers = value!;
-                });
-              },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.remove),
+                    onPressed: selectedPlayers > 2
+                        ? () {
+                            setState(() {
+                              selectedPlayers--;
+                            });
+                          }
+                        : null, // Disable if at minimum
+                  ),
+                ),
+                SizedBox(width: 50),
+                Text(
+                  '$selectedPlayers',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                SizedBox(width: 50),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: selectedPlayers < 4
+                        ? () {
+                            setState(() {
+                              selectedPlayers++;
+                            });
+                          }
+                        : null, // Disable if at maximum
+                  ),
+                ),
+              ],
             ),
+            // DropdownButton<int>(
+            //   value: selectedPlayers,
+            //   items: [2, 3, 4].map((num) {
+            //     return DropdownMenuItem<int>(value: num, child: Text('$num'));
+            //   }).toList(),
+            //   onChanged: (value) {
+            //     setState(() {
+            //       selectedPlayers = value!;
+            //     });
+            //   },
+            // ),
             SizedBox(height: 10),
             ...List.generate(selectedPlayers, (index) {
               return Padding(
@@ -289,10 +321,14 @@ class _NewGamePageState extends State<NewGamePage> {
                 ),
                 child: TextField(
                   controller: nameControllers[index],
+
                   decoration: InputDecoration(
                     labelText: 'Player ${index + 1}',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(borderSide: BorderSide.none),
+                    filled: true,
+                    fillColor: Color(0xFFFFFFFF),
                   ),
+                  style: TextStyle(color: Color(0xFF555555)),
                 ),
               );
             }),
@@ -301,16 +337,48 @@ class _NewGamePageState extends State<NewGamePage> {
               'Time per turn (seconds):',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            DropdownButton<int>(
-              value: selectedTurnTime,
-              items: [30, 60, 90, 120].map((num) {
-                return DropdownMenuItem<int>(value: num, child: Text('$num'));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedTurnTime = value!;
-                });
-              },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.remove),
+                    onPressed: selectedTurnTime > 30
+                        ? () {
+                            setState(() {
+                              selectedTurnTime -= 30;
+                            });
+                          }
+                        : null,
+                  ),
+                ),
+                SizedBox(width: 50),
+                Text(
+                  '$selectedTurnTime',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                SizedBox(width: 50),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: selectedTurnTime < 120
+                        ? () {
+                            setState(() {
+                              selectedTurnTime += 30;
+                            });
+                          }
+                        : null,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 20),
             ElevatedButton(
