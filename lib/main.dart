@@ -30,7 +30,7 @@ class MyAppState extends ChangeNotifier {
   var current = 1;
   int secondsRemaining = 30;
   Timer? _timer;
-  var turnTime = 120;
+  var turnTime = 30;
   var numPlayers = 2;
   var maxNumberOfPlayers = 4;
   var playersName = <String>['Player 1', 'Player 2'];
@@ -372,7 +372,8 @@ class _NewGamePageState extends State<NewGamePage> {
                   controller: nameControllers[0],
                   enabled: true,
                   decoration: InputDecoration(
-                    labelText: 'Player 1',
+                    hintText: 'Player 1',
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     border: OutlineInputBorder(borderSide: BorderSide.none),
                     filled: true,
                     fillColor: Color(0xFFFFFFFF),
@@ -389,7 +390,8 @@ class _NewGamePageState extends State<NewGamePage> {
                   controller: nameControllers[1],
                   enabled: true,
                   decoration: InputDecoration(
-                    labelText: 'Player 2',
+                    hintText: 'Player 2',
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     border: OutlineInputBorder(borderSide: BorderSide.none),
                     filled: true,
                     fillColor: Color(0xFFFFFFFF),
@@ -407,7 +409,8 @@ class _NewGamePageState extends State<NewGamePage> {
                         controller: nameControllers[2],
                         enabled: selectedPlayers > 2,
                         decoration: InputDecoration(
-                          labelText: 'Player 3',
+                          hintText: 'Player 3',
+                          floatingLabelBehavior: FloatingLabelBehavior.never,
                           border: OutlineInputBorder(
                             borderSide: BorderSide.none,
                           ),
@@ -427,7 +430,8 @@ class _NewGamePageState extends State<NewGamePage> {
                         controller: nameControllers[3],
                         enabled: selectedPlayers > 3,
                         decoration: InputDecoration(
-                          labelText: 'Player 4',
+                          hintText: 'Player 4',
+                          floatingLabelBehavior: FloatingLabelBehavior.never,
                           border: OutlineInputBorder(
                             borderSide: BorderSide.none,
                           ),
