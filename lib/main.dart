@@ -32,6 +32,7 @@ class MyAppState extends ChangeNotifier {
   Timer? _timer;
   var turnTime = 120;
   var numPlayers = 2;
+  var maxNumberOfPlayers = 4;
   var playersName = <String>['Player 1', 'Player 2'];
   void nextPlayer() {
     current = (current % numPlayers) + 1;
@@ -203,15 +204,23 @@ class NewGamePage extends StatefulWidget {
 
 class _NewGamePageState extends State<NewGamePage> {
   int selectedPlayers = 2; // Default value
+  int maxNumberOfPlayers = 4;
   int selectedTurnTime = 30; //Default value
   late List<TextEditingController> nameControllers;
 
   @override
   void initState() {
     super.initState();
+    final appState = Provider.of<MyAppState>(context, listen: false);
+    selectedPlayers = appState.numPlayers;
+    selectedTurnTime = appState.turnTime;
     nameControllers = List.generate(
-      selectedPlayers,
-      (index) => TextEditingController(),
+      maxNumberOfPlayers,
+      (index) => TextEditingController(
+        text: index < appState.playersName.length
+            ? appState.playersName[index]
+            : '',
+      ),
     );
   }
 
@@ -223,183 +232,242 @@ class _NewGamePageState extends State<NewGamePage> {
     super.dispose();
   }
 
-  void updateControllers(int count) {
-    if (count > nameControllers.length) {
-      nameControllers.addAll(
-        List.generate(
-          count - nameControllers.length,
-          (index) => TextEditingController(),
-        ),
-      );
-    } else if (count < nameControllers.length) {
-      nameControllers = nameControllers.sublist(0, count);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    updateControllers(selectedPlayers);
-
     return Scaffold(
       appBar: AppBar(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Text(
-              'Game Setup:',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: 32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                'Game Setup:',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-            ),
-            SizedBox(height: 15),
-            Text(
-              'Time per turn (seconds):',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(12),
+              SizedBox(height: 15),
+              Text(
+                'Time per turn (seconds):',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFE0E0E0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.remove),
+                      onPressed: selectedTurnTime > 30
+                          ? () {
+                              setState(() {
+                                selectedTurnTime -= 30;
+                              });
+                            }
+                          : null,
+                    ),
                   ),
-                  child: IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: selectedTurnTime > 30
-                        ? () {
-                            setState(() {
-                              selectedTurnTime -= 30;
-                            });
-                          }
-                        : null,
+                  Container(
+                    height: 40,
+                    width: 125,
+                    color: Color(0xFFFFFFFF),
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 125,
+                      child: Text(
+                        '$selectedTurnTime',
+                        style: Theme.of(context).textTheme.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
-                ),
-                SizedBox(width: 50),
-                Text(
-                  '$selectedTurnTime',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                SizedBox(width: 50),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: selectedTurnTime < 120
-                        ? () {
-                            setState(() {
-                              selectedTurnTime += 30;
-                            });
-                          }
-                        : null,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 30),
-            Text(
-              'Number of players:',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: selectedPlayers > 2
-                        ? () {
-                            setState(() {
-                              selectedPlayers--;
-                            });
-                          }
-                        : null, // Disable if at minimum
-                  ),
-                ),
-                SizedBox(width: 50),
-                Text(
-                  '$selectedPlayers',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                SizedBox(width: 50),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: selectedPlayers < 4
-                        ? () {
-                            setState(() {
-                              selectedPlayers++;
-                            });
-                          }
-                        : null, // Disable if at maximum
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            ...List.generate(selectedPlayers, (index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 4.0,
-                  horizontal: 40.0,
-                ),
-                child: TextField(
-                  controller: nameControllers[index],
 
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFE0E0E0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: selectedTurnTime < 120
+                          ? () {
+                              setState(() {
+                                selectedTurnTime += 30;
+                              });
+                            }
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 30),
+              Text(
+                'Number of players:',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFE0E0E0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.remove),
+                      onPressed: selectedPlayers > 2
+                          ? () {
+                              setState(() {
+                                selectedPlayers--;
+                              });
+                            }
+                          : null, // Disable if at minimum
+                    ),
+                  ),
+                  Container(
+                    height: 40,
+                    width: 125,
+                    color: Color(0xFFFFFFFF),
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 125,
+                      child: Text(
+                        '$selectedPlayers',
+                        style: Theme.of(context).textTheme.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFE0E0E0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: selectedPlayers < 4
+                          ? () {
+                              setState(() {
+                                selectedPlayers++;
+                              });
+                            }
+                          : null, // Disable if at maximum
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              // First player's name
+              SizedBox(
+                width: 320,
+                child: TextField(
+                  controller: nameControllers[0],
+                  enabled: true,
                   decoration: InputDecoration(
-                    labelText: 'Player ${index + 1}',
+                    labelText: 'Player 1',
                     border: OutlineInputBorder(borderSide: BorderSide.none),
                     filled: true,
                     fillColor: Color(0xFFFFFFFF),
                   ),
                   style: TextStyle(color: Color(0xFF555555)),
                 ),
-              );
-            }),
-            SizedBox(height: 20),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 52.0, left: 24.0, right: 24.0),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF1976D2),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
-            minimumSize: Size(280, 48),
-            textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+
+              SizedBox(height: 10),
+              // Second players name
+              SizedBox(
+                width: 320,
+                child: TextField(
+                  controller: nameControllers[1],
+                  enabled: true,
+                  decoration: InputDecoration(
+                    labelText: 'Player 2',
+                    border: OutlineInputBorder(borderSide: BorderSide.none),
+                    filled: true,
+                    fillColor: Color(0xFFFFFFFF),
+                  ),
+                  style: TextStyle(color: Color(0xFF555555)),
+                ),
+              ),
+
+              SizedBox(height: 10),
+              // Third player's name
+              selectedPlayers > 2
+                  ? SizedBox(
+                      width: 320,
+                      child: TextField(
+                        controller: nameControllers[2],
+                        enabled: selectedPlayers > 2,
+                        decoration: InputDecoration(
+                          labelText: 'Player 3',
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Color(0xFFFFFFFF),
+                        ),
+                        style: TextStyle(color: Color(0xFF555555)),
+                      ),
+                    )
+                  : SizedBox(height: 56),
+              SizedBox(height: 10),
+              // Fourth player's name
+              selectedPlayers > 3
+                  ? SizedBox(
+                      width: 320,
+                      child: TextField(
+                        controller: nameControllers[3],
+                        enabled: selectedPlayers > 3,
+                        decoration: InputDecoration(
+                          labelText: 'Player 4',
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Color(0xFFFFFFFF),
+                        ),
+                        style: TextStyle(color: Color(0xFF555555)),
+                      ),
+                    )
+                  : SizedBox(height: 56),
+              SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF1976D2),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  minimumSize: Size(320, 48),
+                  textStyle: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () {
+                  context.read<MyAppState>().numPlayers = selectedPlayers;
+                  context.read<MyAppState>().turnTime = selectedTurnTime;
+                  context.read<MyAppState>().playersName = List.generate(
+                    selectedPlayers,
+                    (index) => nameControllers[index].text.isNotEmpty
+                        ? nameControllers[index].text
+                        : 'Player ${index + 1}',
+                  );
+                  context.read<MyAppState>().startGameTimer();
+                  widget.onStartGame();
+                },
+                child: Text('Start'),
+              ),
+            ],
           ),
-          onPressed: () {
-            context.read<MyAppState>().numPlayers = selectedPlayers;
-            context.read<MyAppState>().turnTime = selectedTurnTime;
-            context.read<MyAppState>().playersName = List.generate(
-              selectedPlayers,
-              (index) => nameControllers[index].text.isNotEmpty
-                  ? nameControllers[index].text
-                  : 'Player ${index + 1}',
-            );
-            context.read<MyAppState>().startGameTimer();
-            widget.onStartGame();
-          },
-          child: Text('Start'),
         ),
       ),
     );
