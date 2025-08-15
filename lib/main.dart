@@ -33,7 +33,7 @@ class MyAppState extends ChangeNotifier {
   var turnTime = 30;
   var numPlayers = 2;
   var maxNumberOfPlayers = 4;
-  var playersName = <String>['Player 1', 'Player 2'];
+  var playersName = <String>['', ''];
   void nextPlayer() {
     current = (current % numPlayers) + 1;
     startTimer();
@@ -64,6 +64,12 @@ class MyAppState extends ChangeNotifier {
     current = 1;
     startTimer();
   }
+
+  void resetToDefault() {
+    turnTime = 30;
+    numPlayers = 2;
+    playersName = <String>['', ''];
+  }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -76,6 +82,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final GlobalKey<_NewGamePageState> newGameKey =
+      GlobalKey<_NewGamePageState>();
   int selectedView = 0; // 0: NewGamePage, 1: TimerPage
   void switchToTimerPage() {
     setState(() {
@@ -99,25 +107,45 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: TextButton.icon(
-              icon: Icon(Icons.refresh, color: Color(0xFF212121)),
-              label: Text(
-                'New Game',
-                style: TextStyle(color: Color(0xFF212121)),
-              ),
-              style: TextButton.styleFrom(backgroundColor: Color(0xFFF4B400)),
-              onPressed: () {
-                setState(() {
-                  selectedView = 0; // Switch to NewGamePage
-                });
-                context.read<MyAppState>().resetTimer();
-              },
-            ),
+            child: selectedView == 0
+                ? TextButton.icon(
+                    icon: Icon(Icons.refresh, color: Color(0xFF212121)),
+                    label: Text(
+                      'Reset Game',
+                      style: TextStyle(color: Color(0xFF212121)),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Color(0xFFF4B400),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        selectedView = 0; // Switch to NewGamePage
+                      });
+                      context.read<MyAppState>().resetToDefault();
+                      newGameKey.currentState?.resetAll();
+                    },
+                  )
+                : TextButton.icon(
+                    icon: Icon(Icons.refresh, color: Color(0xFF212121)),
+                    label: Text(
+                      'New Game',
+                      style: TextStyle(color: Color(0xFF212121)),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Color(0xFFF4B400),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        selectedView = 0; // Switch to NewGamePage
+                      });
+                      context.read<MyAppState>().resetTimer();
+                    },
+                  ),
           ),
         ],
       ),
       body: selectedView == 0
-          ? NewGamePage(onStartGame: switchToTimerPage)
+          ? NewGamePage(key: newGameKey, onStartGame: switchToTimerPage)
           : TimerPage(),
     );
   }
@@ -207,6 +235,17 @@ class _NewGamePageState extends State<NewGamePage> {
   int maxNumberOfPlayers = 4;
   int selectedTurnTime = 30; //Default value
   late List<TextEditingController> nameControllers;
+
+  void resetAll() {
+    setState(() {
+      final appState = Provider.of<MyAppState>(context, listen: false);
+      selectedPlayers = appState.numPlayers;
+      selectedTurnTime = appState.turnTime;
+      for (var controller in nameControllers) {
+        controller.text = '';
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -368,6 +407,7 @@ class _NewGamePageState extends State<NewGamePage> {
               // First player's name
               SizedBox(
                 width: 320,
+                height: 60,
                 child: TextField(
                   controller: nameControllers[0],
                   enabled: true,
@@ -386,6 +426,7 @@ class _NewGamePageState extends State<NewGamePage> {
               // Second players name
               SizedBox(
                 width: 320,
+                height: 60,
                 child: TextField(
                   controller: nameControllers[1],
                   enabled: true,
@@ -405,6 +446,7 @@ class _NewGamePageState extends State<NewGamePage> {
               selectedPlayers > 2
                   ? SizedBox(
                       width: 320,
+                      height: 60,
                       child: TextField(
                         controller: nameControllers[2],
                         enabled: selectedPlayers > 2,
@@ -420,12 +462,13 @@ class _NewGamePageState extends State<NewGamePage> {
                         style: TextStyle(color: Color(0xFF555555)),
                       ),
                     )
-                  : SizedBox(height: 56),
+                  : SizedBox(height: 60),
               SizedBox(height: 10),
               // Fourth player's name
               selectedPlayers > 3
                   ? SizedBox(
                       width: 320,
+                      height: 60,
                       child: TextField(
                         controller: nameControllers[3],
                         enabled: selectedPlayers > 3,
@@ -441,7 +484,7 @@ class _NewGamePageState extends State<NewGamePage> {
                         style: TextStyle(color: Color(0xFF555555)),
                       ),
                     )
-                  : SizedBox(height: 56),
+                  : SizedBox(height: 60),
               SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
