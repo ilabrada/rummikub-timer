@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,6 +34,7 @@ class MyAppState extends ChangeNotifier {
   var turnTime = 30;
   var numPlayers = 2;
   var maxNumberOfPlayers = 4;
+  final AudioPlayer _audioPlayer = AudioPlayer();
   var playersName = <String>['', ''];
   void nextPlayer() {
     current = (current % numPlayers) + 1;
@@ -42,9 +44,15 @@ class MyAppState extends ChangeNotifier {
 
   void startTimer() {
     resetTimer();
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       if (secondsRemaining > 0) {
         secondsRemaining--;
+        // Play sound based on remaining seconds
+        if (secondsRemaining <= 5) {
+          await _audioPlayer.play(AssetSource('alert_running_out.wav'));
+        } else if (secondsRemaining <= 10) {
+          await _audioPlayer.play(AssetSource('tick.wav'));
+        }
         notifyListeners();
       } else {
         _timer?.cancel();
