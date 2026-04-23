@@ -54,6 +54,94 @@ flutter run
 - Main entry point: `lib/main.dart`
 - Flutter configuration: `pubspec.yaml`
 
+## Developer Quickstart (macOS + Android Emulator)
+
+This project is a Flutter app targeting Android.
+
+Run these commands in order.
+
+### One-time setup
+
+```bash
+brew install --cask flutter
+brew install openjdk@17 android-platform-tools
+brew install --cask android-commandlinetools
+
+export PATH="/opt/homebrew/opt/openjdk@17/bin:/opt/homebrew/bin:$PATH"
+export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+export ANDROID_SDK_ROOT="/opt/homebrew/share/android-commandlinetools"
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
+
+flutter config --android-sdk /opt/homebrew/share/android-commandlinetools
+
+sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
+	"platform-tools" \
+	"platforms;android-36" \
+	"build-tools;36.0.0" \
+	"build-tools;28.0.3" \
+	"emulator" \
+	"system-images;android-36;google_apis;arm64-v8a"
+
+yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
+flutter doctor -v
+```
+
+### Create emulator (first time only)
+
+```bash
+export ANDROID_SDK_ROOT="/opt/homebrew/share/android-commandlinetools"
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
+
+yes "no" | avdmanager create avd \
+	-n Pixel_8_API_36 \
+	-k "system-images;android-36;google_apis;arm64-v8a" \
+	-d pixel_8
+```
+
+### Start emulator + run app
+
+```bash
+export PATH="/opt/homebrew/opt/openjdk@17/bin:/opt/homebrew/bin:$PATH"
+export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+export ANDROID_SDK_ROOT="/opt/homebrew/share/android-commandlinetools"
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
+
+emulator -avd Pixel_8_API_36
+adb kill-server
+adb start-server
+adb devices -l
+
+cd /Users/ivan/Documents/repository/rummikub-timer
+flutter pub get
+flutter run -d emulator-5554 --device-timeout 90
+```
+
+### While app is running
+
+- Press `r` for hot reload
+- Press `R` for hot restart
+- Press `q` to quit
+
+### Relaunch after closing app
+
+```bash
+export PATH="/opt/homebrew/opt/openjdk@17/bin:/opt/homebrew/bin:$PATH"
+export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+export ANDROID_SDK_ROOT="/opt/homebrew/share/android-commandlinetools"
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
+
+cd /Users/ivan/Documents/repository/rummikub-timer
+flutter run -d emulator-5554 --device-timeout 90
+```
+
+### If NDK error appears (source.properties missing)
+
+```bash
+rm -rf /opt/homebrew/share/android-commandlinetools/ndk/27.0.12077973
+cd /Users/ivan/Documents/repository/rummikub-timer
+flutter build apk --debug
+```
+
 ## Project Status
 
 Active development continues in this GitHub repository.
