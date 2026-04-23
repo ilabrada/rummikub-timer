@@ -36,6 +36,8 @@ class MyAppState extends ChangeNotifier {
   var maxNumberOfPlayers = 4;
   final AudioPlayer _audioPlayer = AudioPlayer();
   var playersName = <String>['', ''];
+  bool isPaused = false;
+
   void nextPlayer() {
     current = (current % numPlayers) + 1;
     startTimer();
@@ -44,6 +46,7 @@ class MyAppState extends ChangeNotifier {
 
   void startTimer() {
     resetTimer();
+    isPaused = false;
     _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       if (secondsRemaining > 0) {
         secondsRemaining--;
@@ -65,6 +68,7 @@ class MyAppState extends ChangeNotifier {
   void resetTimer() {
     _timer?.cancel();
     secondsRemaining = turnTime;
+    isPaused = false;
     notifyListeners();
   }
 
@@ -77,6 +81,32 @@ class MyAppState extends ChangeNotifier {
     turnTime = 30;
     numPlayers = 2;
     playersName = <String>['', ''];
+    isPaused = false;
+  }
+
+  void pauseTimer() {
+    _timer?.cancel();
+    isPaused = true;
+    notifyListeners();
+  }
+
+  void resumeTimer() {
+    isPaused = false;
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      if (secondsRemaining > 0) {
+        secondsRemaining--;
+        if (secondsRemaining <= 5) {
+          await _audioPlayer.play(AssetSource('alert_running_out.wav'));
+        } else if (secondsRemaining <= 10) {
+          await _audioPlayer.play(AssetSource('tick.wav'));
+        }
+        notifyListeners();
+      } else {
+        _timer?.cancel();
+        nextPlayer();
+      }
+    });
+    notifyListeners();
   }
 }
 
@@ -218,10 +248,50 @@ class TimerPage extends StatelessWidget {
                     ?.copyWith(fontSize: 58)
                     .copyWith(fontWeight: FontWeight.bold),
               ),
-              onPressed: () {
-                context.read<MyAppState>().nextPlayer();
-              },
+              onPressed: appState.isPaused
+                  ? null
+                  : () {
+                      context.read<MyAppState>().nextPlayer();
+                    },
               child: Text(tseconds),
+            ),
+          ),
+          SizedBox(height: 24),
+          GestureDetector(
+            onTap: () {
+              if (appState.isPaused) {
+                context.read<MyAppState>().resumeTimer();
+              } else {
+                context.read<MyAppState>().pauseTimer();
+              }
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: appState.isPaused
+                    ? Color(0xFF388E3C)
+                    : Color(0xFF1E3A5F),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    appState.isPaused ? Icons.play_arrow : Icons.pause,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    appState.isPaused ? 'Resume' : 'Pause',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
