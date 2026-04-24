@@ -142,6 +142,69 @@ cd /Users/ivan/Documents/repository/rummikub-timer
 flutter build apk --debug
 ```
 
+## Release Builds
+
+### Prerequisites (one time)
+
+A signing keystore is required. If you haven't created one yet:
+
+```bash
+keytool -genkeypair -v \
+  -keystore ~/upload-keystore.jks \
+  -keyalg RSA \
+  -keysize 2048 \
+  -validity 10000 \
+  -alias upload
+```
+
+Then create `android/key.properties` (this file is gitignored and must never be committed):
+
+```properties
+storePassword=<your-keystore-password>
+keyPassword=<your-key-password>
+keyAlias=upload
+storeFile=/Users/<you>/upload-keystore.jks
+```
+
+### Build App Bundle (Play Store)
+
+Required format for Google Play uploads.
+
+```bash
+flutter build appbundle
+```
+
+Output: `build/app/outputs/bundle/release/app-release.aab`
+
+Upload this file in Google Play Console when creating or updating a release.
+
+### Build Release APK (direct distribution / sideloading)
+
+Use this to share the app without the Play Store (via link, USB, etc.).
+
+```bash
+flutter build apk --release
+```
+
+Output: `build/app/outputs/flutter-apk/rummikub-timer-release.apk`
+
+To install directly on a connected device:
+
+```bash
+adb install build/app/outputs/flutter-apk/rummikub-timer-release.apk
+```
+
+Recipients installing the APK manually must enable **Install unknown apps** on their device for the app or browser they use to open the file.
+
+### Releasing a new version
+
+1. Bump the version in `pubspec.yaml` — the number after `+` must always increase:
+   ```yaml
+   version: 1.0.1+6
+   ```
+2. Build the `.aab` or `.apk` as above.
+3. Upload to Play Console or redistribute the new APK.
+
 ## Project Status
 
 Active development continues in this GitHub repository.
