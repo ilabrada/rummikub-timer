@@ -1,4 +1,4 @@
-package com.example.rummikubtimer
+package com.majavivo.rummikubtimer
 
 import io.flutter.embedding.android.FlutterActivity
 
